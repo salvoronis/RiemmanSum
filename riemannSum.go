@@ -4,6 +4,7 @@ import(
   "math"
   "fmt"
   "errors"
+  "os"
 )
 
 func square(x float64) float64 {
@@ -16,7 +17,7 @@ func cube(x float64) float64 {
 
 func calculateError(a,b,e float64) (int, float64, error) {
   if e == 0.0 {
-    return 0, 0, errors.New("Деление на 0")
+    return 0, 0, errors.New("Деление на 0 или символы")
   }
   floatN := (b-a)/math.Pow(e, 0.25)
   n := int(math.Ceil(floatN))
@@ -42,6 +43,7 @@ func integrate(a,b,side float64, n int, f func(float64) float64) (float64, float
 }
 
 func main(){
+  var negative bool = false
   var a, b, e, sideInt float64
   var mathFunc, side string
   var f func(float64) float64
@@ -82,16 +84,26 @@ func main(){
   }
   fmt.Print("Введите нижний и верхний порог: ")
   fmt.Scan(&a, &b)
+  if b < a {
+    negative = true
+    c := b
+    b = a
+    a = c
+  }
   fmt.Print("Введите погрешность: ")
   fmt.Scan(&e)
   n, newerr, err := calculateError(a,b,e)
   if err != nil {
-    panic(err)
+    fmt.Println(err)
+    os.Exit(1)
   }
   fmt.Println()
   result, runge := integrate(a,b,sideInt,n,f)
   if math.IsNaN(result) {
     result, newerr, runge = 0,0,0
+  }
+  if negative {
+    result = -result
   }
   fmt.Printf("Результат: %f\n", result)
   fmt.Printf("Количество разбиений: %d\n", n)
